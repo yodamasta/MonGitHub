@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PHONETIK — Lyrics to French phonetics</title>
+<style>
+:root{--bg:#09090b;--card:#121217;--card2:#18181f;--text:#f7f7fb;--muted:#a1a1aa;--line:#292932;--accent:#8b5cf6;--accent2:#a78bfa}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#21153d 0,#09090b 38%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+.wrap{max-width:1180px;margin:auto;padding:28px 18px 60px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:28px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#5b21b6);display:grid;place-items:center;font-weight:900;box-shadow:0 10px 30px #7c3aed55}.brand h1{font-size:22px;margin:0;letter-spacing:.05em}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.hero{text-align:center;margin:34px auto 28px;max-width:780px}.hero h2{font-size:clamp(30px,5vw,58px);line-height:1.02;margin:0 0 14px}.hero h2 span{background:linear-gradient(90deg,#fff,var(--accent2));-webkit-background-clip:text;color:transparent}.hero p{color:var(--muted);font-size:16px;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:#111116cc;border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 18px 60px #0006}.panelHead{display:flex;justify-content:space-between;align-items:center;padding:15px 17px;border-bottom:1px solid var(--line)}.panelHead strong{font-size:13px;letter-spacing:.08em}.count{color:var(--muted);font-size:12px}textarea,.result{width:100%;min-height:420px;background:transparent;color:var(--text);border:0;outline:0;resize:vertical;padding:20px;font:500 17px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}.result{overflow:auto}.placeholder{color:#6b6b76}
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;margin:16px 0}select,button{border:1px solid var(--line);border-radius:13px;background:var(--card2);color:var(--text);padding:13px 14px;font-weight:700}button{cursor:pointer}button.primary{background:linear-gradient(135deg,var(--accent),#6d28d9);border-color:#8b5cf6;min-width:170px}button:hover{filter:brightness(1.08)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.actions button{font-size:13px}.hint{margin-top:20px;padding:15px 16px;border:1px solid #392d55;border-radius:14px;background:#171124;color:#c8b8f7;font-size:13px;line-height:1.5}.footer{color:#71717a;text-align:center;font-size:12px;margin-top:30px}
+.linePair{display:grid;grid-template-columns:1fr;gap:3px;padding:9px 0;border-bottom:1px dashed #26262e}.orig{color:#8f8f9b;font-size:13px}.phon{color:#fff}.empty{height:1.2em}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.controls .primary{grid-column:1/-1}.hero{margin-top:20px}.result,textarea{min-height:310px}}
+@media(max-width:520px){.controls{grid-template-columns:1fr}.controls .primary{grid-column:auto}.wrap{padding:18px 12px 40px}.panel{border-radius:17px}.hero h2{font-size:36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="logo">PH</div><div><h1>PHONETIK</h1><p>Chante ce que tu entends.</p></div></div>
+  <section class="hero"><h2>Des paroles étrangères en <span>phonétique française.</span></h2><p>Colle les paroles d’une chanson. PHONETIK conserve les lignes et transforme la prononciation en une écriture intuitive pour un francophone.</p></section>
+  <div class="controls">
+    <select id="lang"><option value="auto">Langue : Auto</option><option value="en">Anglais</option><option value="es">Espagnol</option><option value="it">Italien</option><option value="de">Allemand</option><option value="pt">Portugais</option></select>
+    <select id="mode"><option value="easy">Mode : Facile</option><option value="precise">Mode : Précis</option><option value="sing">Mode : Chantable</option></select>
+    <select id="display"><option value="phon">Affichage : Phonétique</option><option value="pairs">Original + phonétique</option></select>
+    <button class="primary" id="convert">CONVERTIR</button>
+  </div>
+  <div class="grid">
+    <section class="panel"><div class="panelHead"><strong>PAROLES ORIGINALES</strong><span class="count" id="count">0 caractère</span></div><textarea id="input" placeholder="Colle les paroles ici…"></textarea></section>
+    <section class="panel"><div class="panelHead"><strong>PHONÉTIQUE FRANÇAISE</strong><span class="count" id="detected">Prêt</span></div><div class="result" id="output"><span class="placeholder">La phonétique apparaîtra ici…</span></div></section>
+  </div>
+  <div class="actions"><button id="copy">Copier la phonétique</button><button id="copyBoth">Copier original + phonétique</button><button id="speak">🔊 Prononciation</button><button id="clear">Effacer</button></div>
+  <div class="hint"><b>Astuce :</b> le mode <b>Chantable</b> privilégie une lecture fluide pour suivre un morceau. Le mode <b>Précis</b> garde davantage de nuances de prononciation.</div>
+  <div class="footer">PHONETIK V1 · aucun texte n’est envoyé ni stocké par ce site.</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);let lastPhon='';
+function detect(s){s=' '+s.toLowerCase()+' ';if(/[ñ¿¡]/.test(s)||/\b(que|una|pero|como|estoy|quiero)\b/.test(s))return'es';if(/\b(the|you|i |and|love|don't|baby|with|night|my )\b/.test(s))return'en';if(/\b(che|non|sono|una|amore|per|con)\b/.test(s))return'it';if(/\b(ich|und|nicht|mein|mit|die|der)\b/.test(s))return'de';if(/\b(não|você|uma|meu|com|que)\b/.test(s))return'pt';return'en'}
+function preserveCase(orig,res){return /^[A-ZÀ-Ü]/.test(orig)?res.charAt(0).toUpperCase()+res.slice(1):res}
+function wordEN(w,mode){let o=w, x=w.toLowerCase();const dict={i:'aï',i'm:'aïm',im:'aïm',you:'you',your:'yor',you're:'your',the:'ze',a:'eï',an:'ane',and:'ènd',to:'tou',too:'tou',of:'ov',for:'for',from:'from',with:'ouiz',without:'ouizaout',my:'maï',me:'mi',we:'oui',they:'zéï',this:'ziss',that:'zatt',there:'zèr',here:'hir',love:'leuv',baby:'béïbi',yeah:'yè',yes:'yèss',no:'no',know:'no',don't:'dont',dont:'dont',can't:'kante',cant:'kante',won't:'wônt',want:'ouant',wanna:'ouana',gonna:'gona',night:'naït',time:'taïm',life:'laïf',like:'laïk',right:'raït',side:'saïd',eyes:'aïz',heart:'hart',girl:'gueurl',world:'oueurld',way:'ouéï',say:'séï',said:'sèd',see:'si',feel:'fil',need:'nid',never:'néveur',always:'ôl-ouéïz',hello:'hélo',other:'azeure',must:'meust',have:'hav',called:'kôld',thousand:'zaouzeund',times:'taïmz'};if(dict[x])return preserveCase(o,dict[x]);x=x.replace(/tion\b/g,'cheune').replace(/sion\b/g,'jeune').replace(/ough/g,'of').replace(/igh/g,'aï').replace(/ee/g,'i').replace(/ea/g,'i').replace(/oo/g,'ou').replace(/ou/g,'aou').replace(/ow\b/g,'aou').replace(/ow/g,'o').replace(/ai|ay/g,'éï').replace(/oi|oy/g,'oï').replace(/th/g,'z').replace(/sh/g,'ch').replace(/ch/g,'tch').replace(/ph/g,'f').replace(/qu/g,'kou').replace(/ck/g,'k').replace(/c(?=[eiy])/g,'s').replace(/g(?=[eiy])/g,'dj').replace(/r/g,'r').replace(/j/g,'dj').replace(/y$/g,'i').replace(/er\b/g,'eur').replace(/ing\b/g,'ing').replace(/e\b/g,'');if(mode==='sing')x=x.replace(/eur/g,'eure').replace(/ing/g,'ineg');if(mode==='precise')x=x.replace(/^h/,'h');return preserveCase(o,x)}
+function wordES(w){let o=w,x=w.toLowerCase();x=x.replace(/ll/g,'y').replace(/ñ/g,'gn').replace(/j/g,'r').replace(/ge|gi/g,m=>m==='ge'?'ré':'ri').replace(/gue/g,'gué').replace(/gui/g,'gui').replace(/que/g,'ké').replace(/qui/g,'ki').replace(/ce|ci/g,m=>m==='ce'?'sé':'si').replace(/z/g,'s').replace(/v/g,'b').replace(/h/g,'').replace(/y\b/g,'i');return preserveCase(o,x)}
+function wordIT(w){let o=w,x=w.toLowerCase();x=x.replace(/gli/g,'lli').replace(/gn/g,'gn').replace(/chi/g,'ki').replace(/che/g,'ké').replace(/ci/g,'tchi').replace(/ce/g,'tché').replace(/gi/g,'dji').replace(/ge/g,'djé').replace(/sc([ei])/g,'ch$1').replace(/zz/g,'ts').replace(/z/g,'dz');return preserveCase(o,x)}
+function wordDE(w){let o=w,x=w.toLowerCase();x=x.replace(/sch/g,'ch').replace(/ch/g,'rh').replace(/ei/g,'aï').replace(/ie/g,'i').replace(/eu|äu/g,'oï').replace(/w/g,'v').replace(/v/g,'f').replace(/z/g,'ts').replace(/j/g,'y').replace(/ß/g,'ss');return preserveCase(o,x)}
+function wordPT(w){let o=w,x=w.toLowerCase();x=x.replace(/nh/g,'gn').replace(/lh/g,'li').replace(/ão/g,'aon').replace(/õe/g,'oin').replace(/j/g,'j').replace(/ge|gi/g,m=>m==='ge'?'jé':'ji').replace(/que/g,'ké').replace(/qui/g,'ki').replace(/ch/g,'ch').replace(/rr/g,'r').replace(/ç/g,'s');return preserveCase(o,x)}
+function convertLine(line,lang,mode){return line.replace(/[A-Za-zÀ-ÿ’']+/g,w=>{if(lang==='es')return wordES(w);if(lang==='it')return wordIT(w);if(lang==='de')return wordDE(w);if(lang==='pt')return wordPT(w);return wordEN(w,mode)})}
+function convert(){const text=$('input').value;if(!text.trim()){return}let lang=$('lang').value;if(lang==='auto')lang=detect(text);const mode=$('mode').value;const lines=text.split('\n');const ph=lines.map(l=>convertLine(l,lang,mode));lastPhon=ph.join('\n');$('detected').textContent='Langue détectée : '+({en:'Anglais',es:'Espagnol',it:'Italien',de:'Allemand',pt:'Portugais'}[lang]||lang);if($('display').value==='pairs'){$('output').innerHTML=lines.map((l,i)=>l===''?'<div class="empty"></div>':`<div class="linePair"><div class="orig">${esc(l)}</div><div class="phon">${esc(ph[i])}</div></div>`).join('')}else $('output').textContent=lastPhon}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+$('convert').onclick=convert;$('display').onchange=()=>lastPhon&&convert();$('input').oninput=e=>$('count').textContent=e.target.value.length+' caractère'+(e.target.value.length>1?'s':'');$('copy').onclick=()=>lastPhon&&navigator.clipboard.writeText(lastPhon);$('copyBoth').onclick=()=>lastPhon&&navigator.clipboard.writeText($('input').value+'\n\n--- PHONÉTIQUE ---\n'+lastPhon);$('clear').onclick=()=>{$('input').value='';$('output').innerHTML='<span class="placeholder">La phonétique apparaîtra ici…</span>';$('count').textContent='0 caractère';$('detected').textContent='Prêt';lastPhon=''};$('speak').onclick=()=>{if(!lastPhon)return;const u=new SpeechSynthesisUtterance($('input').value);const l=$('lang').value==='auto'?detect($('input').value):$('lang').value;u.lang={en:'en-US',es:'es-ES',it:'it-IT',de:'de-DE',pt:'pt-PT'}[l]||'en-US';speechSynthesis.cancel();speechSynthesis.speak(u)};
+</script>
+</body>
+</html>
